@@ -80,46 +80,10 @@ int main(){
 	int after_decrypt_len = 0; /* 복호화 후 데이터 길이 */
 	int after_encrypt_len = 0; /* 암호화 후 데이터 길이 */
 	
-#if SOCKET_TEST_SIM
-	/*
-	* 소켓 라이브러리 초기화
-	* 2.2버전의 winsock사용
-	*/
-
-	WSADATA wsa_data;
-	SOCKET connect_sock;
-	SOCKADDR_IN connect_addr;
-
-	if(WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0){
-		error_handling("WSAStartup() Error");
-	}
-	printf("socket 라이브러리 초기화\n");
-
-	/* 소켓을 생성해 SOCKET 구조체에 대입*/
-	connect_sock = socket(PF_INET, SOCK_STREAM, 0);
-	if(connect_sock == INVALID_SOCKET){
-		error_handling("socket() Error");
-	}
-	printf("socket 생성\n");
-
-	memset(&connect_addr, 0, sizeof(connect_addr));
-	connect_addr.sin_family = AF_INET; /* Internet Protocol Version(IPv4) */
-	connect_addr.sin_addr.s_addr = inet_addr(SERVER_IP); /* IP주소 저장 */
-	connect_addr.sin_port = htons(PORT_NUM); /* port번호 저장 */
-	
-	printf("연결중...\n");
-	/* 구조체에 저장된 주소로 connect_sock 소켓을 통해 접속 시도 */
-	if(connect(connect_sock, (SOCKADDR*)&connect_addr, sizeof(connect_addr)) == SOCKET_ERROR){
-		printf("Err_No: %d\n", WSAGetLastError());
-		error_handling("connect() Error");
-	}
-	printf("연결성공\n");
-
-#endif
 	std::locale::global(std::locale(""));
 	std::wcout.imbue(std::locale());
 
-	const unsigned char* test_str = (const unsigned char*)"한글123abc";
+	/*const unsigned char* test_str = (const unsigned char*)"한글123abc";
 	int test_size = 0;
 	unsigned char* test_out_str;
 	test_out_str = __base64_encode(test_str, strlen((char*)test_str), &test_size);
@@ -130,7 +94,7 @@ int main(){
 	int test_out_size = strlen((char*)test_out_str);
 
 	test_out_decode_str = __base64_decode(test_out_str, strlen((char*)test_out_str), &test_out_size);
-	std::cout << test_out_decode_str << std::endl;
+	std::cout << test_out_decode_str << std::endl;*/
 
 	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 	std::cout << "암호화 테스트" << std::endl;
@@ -144,7 +108,8 @@ int main(){
 	unsigned char* base64_encoded_Str = NULL;
 	int base64_encoded_Size = 0;
 
-	plainStr = (char*)"{\r\n  \"set-tx-configuration\": {\r\n    \"tx-mac\": \"00:67:a8:2d:84:7e\",\r\n    \"tx-ip\": \"232.123.132.154\",\r\n    \"rx-said\": \"PC000001\",\r\n    \"rx-client-id\": \"00:52:a8:2d:84:4e\",\r\n    \"rx-cust-id\":\"\",\r\n    \"auth-method\":\"auth-pw\",\r\n    \"port-1\": \"10001\",\r\n    \"port-2\": \"10002\",\r\n    \"port-3\": \"10003\",\r\n    \"port-4\": \"10004\",\r\n    \"port-5\": \"10005\",\r\n    \"zone-id\":\"ZONE0001\",\r\n    \"option\":\" \"\r\n  }\r\n}\r\n";
+	//plainStr = (char*)"{\r\n  \"set-tx-configuration\": {\r\n    \"tx-mac\": \"00:67:a8:2d:84:7e\",\r\n    \"tx-ip\": \"232.123.132.154\",\r\n    \"rx-said\": \"PC000001\",\r\n    \"rx-client-id\": \"00:52:a8:2d:84:4e\",\r\n    \"rx-cust-id\":\"\",\r\n    \"auth-method\":\"auth-pw\",\r\n    \"port-1\": \"10001\",\r\n    \"port-2\": \"10002\",\r\n    \"port-3\": \"10003\",\r\n    \"port-4\": \"10004\",\r\n    \"port-5\": \"10005\",\r\n    \"zone-id\":\"ZONE0001\",\r\n    \"option\":\" \"\r\n  }\r\n}\r\n";
+	plainStr = (char*)"sjpsjp";
 	plainStr_Size = strlen((char*)plainStr);
 
 	// SEED Encode
@@ -155,11 +120,10 @@ int main(){
 	base64_encoded_Str = __base64_encode((unsigned char*)seed_encoded_Str, encoded_Cyper_Size, &base64_encoded_Size);
 
 
-	std::cout << "[Encode] PlainStr : " << base64_encoded_Str << std::endl;
+	std::cout << "[Encode] PlainStr : " << plainStr << std::endl;
+	std::cout << "[Encode] base64_encoded_Str : " << base64_encoded_Str << std::endl;
 	std::cout << "[Encode] PlainStr size : " << base64_encoded_Size << std::endl;
 	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-
-
 
 	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 	std::cout << "복호화 테스트" << std::endl;
@@ -174,7 +138,7 @@ int main(){
 
 
 	// Init base64 cyper String
-	base64_CyperStr = (unsigned char*)"pBvdqQGRAsecaAT4V2kMvw==";
+	base64_CyperStr = (unsigned char*)"BoX1QjSlsmD1UcCP/8vzBg==";
 	base64_CyperStr_Size = strlen((char*)base64_CyperStr); // Not include \0
 	//base64_CyperStr = base64_encoded_Str;
 	//base64_CyperStr_Size = strlen((char*)base64_CyperStr); // Not include \0
@@ -188,6 +152,7 @@ int main(){
 	// SEED Decode
 	decoded_PlainStr_Size = KISA_SEED_CBC_DECRYPT(key, iv, seed_CyperStr, base64_CyperStr_Size, decoded_PlainStr);
 
+	std::cout << "[Decode] base64_CyperStr : " << base64_CyperStr << std::endl;
 	std::cout << "[Decode] PlainStr : " << decoded_PlainStr << std::endl;
 	std::cout << "[Decode] PlainStr size : " << decoded_PlainStr_Size << std::endl;
 	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -197,83 +162,7 @@ int main(){
 
 
 
-	while(1){
-		memset(&recv_text, 0, sizeof(recv_text));
-		
-		/* 암호화 시작 */
-		//printf("SEED 암호화할 데이터를 입력하세요: ");
-		//fgets((char *)plaintext, sizeof(plaintext), stdin); /* 암호화할 평문 사용자입력 */
-
-		//char* plaintext = (char*)"{\r\n  \"hello\": {\r\n    \"client-info\": {\r\n      \"said\":\"MSLM0001\",\r\n      \"client-id\":\"MSLM0001\",\r\n      \"device-name\": \"SW RX\",\r\n      \"device-version\": \"1.0.0\",\r\n      \"platform\": \"syncpc-client-OS\",\r\n      \"locale\": \"ko_KO\",\r\n      \"hostname\": \"syncpc.com\",\r\n      \"serial-number\": \"123456\",\r\n      \"mac\": \"00:67:a8:2d:84:7e\"\r\n     },\r\n    \"CBS-info\": {\r\n      \"device-name\": \"kt Connection Broker\",\r\n      \"device-version\": \"1.0.0.12345\",\r\n      \"platform\": \"Linux Ubuntu 10.4 64-bit\",\r\n      \"ip-address\": \"10.0.136.93\",\r\n      \"hostname\": \"CBS.kt.com\"\r\n     },\r\n    \"negotiable capability\": {\r\n      \"capability\": [\r\n        \"NEGO_OAUTH\",\r\n        \"NEGO_PASSWORD\"\r\n      ]\r\n    },\r\n    \"client-RMS-options\": {\r\n      \"option\": {\r\n        \"name\": \"option-name\",\r\n        \"value\": \"option-value\"\r\n      }\r\n    }\r\n  }\r\n}";
-		char* plaintext = (char*)"{\r\n  \"set-tx-configuration\": {\r\n    \"tx-mac\": \"00:67:a8:2d:84:7e\",\r\n    \"tx-ip\": \"232.123.132.154\",\r\n    \"rx-said\": \"PC000001\",\r\n    \"rx-client-id\": \"00:52:a8:2d:84:4e\",\r\n    \"rx-cust-id\":\"\",\r\n    \"auth-method\":\"auth-pw\",\r\n    \"port-1\": \"10001\",\r\n    \"port-2\": \"10002\",\r\n    \"port-3\": \"10003\",\r\n    \"port-4\": \"10004\",\r\n    \"port-5\": \"10005\",\r\n    \"zone-id\":\"ZONE0001\",\r\n    \"option\":\" \"\r\n  }\r\n}\r\n";
-		//std::string strtest = plaintext;
-		//ReplaceAll(strtest, std::string("\""), std::string("@"));
-		//std::cout << strtest << std::endl;
-
-		plaintext_len = strlen((char *)plaintext); /* 입력받은 평문의 길이 계산 */
-		
-		/* 입력받은 데이터가 exit면 종료 */
-		if(strcmp((char *)plaintext, "exit\n") == 0){
-			//send(connect_sock, (char *)plaintext, strlen((char *)plaintext), 0);
-			break;
-		}
-
-		printf("plaint text : %s\n", plaintext);
-
-		/* SEED-CBC 암호화 */
-		after_encrypt_len = KISA_SEED_CBC_ENCRYPT(key, iv, (unsigned char*)plaintext, plaintext_len, ciphertext);
-
-		/* 암호화한 데이터를 Base64 인코딩 */
-		str = __base64_encode((unsigned char *)ciphertext, after_encrypt_len, &size);
-
-		printf("base64 enc\n");
-		//printf("%s\n", str);
-
-#if SOCKET_TEST_SIM
-		/* 서버로 암호화한 데이터 전송 */
-		send(connect_sock, (const char *)str, size, 0);
-		printf("암호화 데이터 전송성공\n");*/
-
-		/* 서버로부터 전송되는 데이터 수신 */
-		recv_text_length = recv(connect_sock, (char *)recv_text, sizeof(recv_text) - 1, 0);
-		if(recv_text_length == -1){
-			error_handling("read() error");
-		}
-		printf("서버로부터 받은 데이터: %s", recv_text);
-#endif
-
-		str = (unsigned char*)"7hnLAjhTj+zd+sjhAwN/5Q==";
-		size = strlen((char*)str);
-
-		/* 서버로부터 받은 암호화 데이터를 Base64 디코딩 */
-		//dst = __base64_decode(recv_text, strlen((char*)recv_text), &size);
-		dst = __base64_decode(str, strlen((char *)str), &size);
-
-		/* SEED-CBC 복호화 */
-		after_decrypt_len = KISA_SEED_CBC_DECRYPT(key, iv, dst, size, after_decrypt_plaintext);
-
-		printf("base64 -> seed dec %s\n", after_decrypt_plaintext);
-
-
-		/* 복호화 데이터 출력 */
-		print_decryptdata(after_decrypt_len, after_decrypt_plaintext, dst, size);
-		
-		// free error  남 체크 바람
-		//free(str);
-		//free(dst);
-
-		break;
-		
-		printf("--------------------------------------------------------------\n");
-	}
-	printf("연결종료\n");
 	
-#if SOCKET_TEST_SIM
-
-	closesocket(connect_sock); /* 소켓 닫기 */
-	WSACleanup();/* winsock 해제 */
-
-#endif
 
 	return 0;
 }
